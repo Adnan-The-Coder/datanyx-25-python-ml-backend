@@ -1,0 +1,24 @@
+from pydantic_settings import BaseSettings
+from typing import Optional
+
+class Settings(BaseSettings):
+    # App settings
+    APP_NAME: str = "MG Neuroinformatics MLOps Service"
+    ENVIRONMENT: str = "development"
+    DEBUG: bool = True
+    
+    # MLOps Paths
+    DATA_PATH: str = "data/mg_clinical_data.csv"
+    MODEL_DIR: str = "app/models"
+    
+    # Model settings
+    MODEL_VERSION: str = "v1.1.0"
+
+    # Server settings (for Uvicorn/Docker)
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()

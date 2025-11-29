@@ -1,0 +1,44 @@
+# ... (existing imports) ...
+import joblib
+import os
+from app.core.config import settings
+
+SCALER = None
+SCALER_PATH = os.path.join(settings.MODEL_DIR, 'feature_scaler.pkl')
+
+class FeatureService:
+
+    @classmethod
+    def load_scaler(cls):
+        global SCALER
+        if SCALER is None:
+            try:
+                SCALER = joblib.load(SCALER_PATH)
+                print(f"Scaler loaded successfully from {SCALER_PATH}")
+            except Exception as e:
+                # If scaler isn't present, the service cannot run correctly.
+                raise RuntimeError(f"Feature Scaler not found or failed to load: {e}. Please run the training endpoint first.")
+    
+    # NOTE: The rest of the SSI/FBS logic remains the same, but you would 
+    # use the loaded SCALER here to transform raw input before passing to the ensemble.
+    @classmethod
+    def process_raw_data(cls, raw_data: RawInputData) -> EngineeredFeatures:
+        # Load scaler before processing
+        cls.load_scaler() 
+        
+        # ... (SSI, FBS, Trend calculation logic) ...
+        
+        # 4. Apply Scaling/Encoding using the loaded SCALER
+        # input_array = np.array([[raw_data.Age, raw_data.Ptosis_severity_score, ...]])
+        # scaled_data = SCALER.transform(input_array)
+        
+        # For this template, we return just the dummy features
+        ssi = cls.calculate_SSI(raw_data)
+        fbs = cls.calculate_FBS(raw_data)
+        trend = 0.0 # simplified for template
+        
+        return EngineeredFeatures(
+            Symptom_Severity_Index=ssi,
+            Fatigue_Burden_Score=fbs,
+            Time_Based_Trend=trend
+        )

@@ -1,0 +1,7 @@
+from fastapi import APIRouter
+from .endpoints import predict, train # Import the new train endpoint
+
+api_router = APIRouter()
+
+api_router.include_router(predict.router, tags=["Prediction"])
+api_router.include_router(train.router, tags=["Training"]) # Include the new training router
