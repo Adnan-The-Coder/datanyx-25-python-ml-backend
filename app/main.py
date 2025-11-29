@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from datetime import datetime
+from api.v1.endpoints import predict
 
 # Initialize the FastAPI application
 app = FastAPI(
@@ -20,6 +21,7 @@ def read_root():
         "documentation_url": "/docs"
     }
 
+
 @app.get("/health", tags=["Health Check"])
 def health_check():
     """
@@ -30,3 +32,7 @@ def health_check():
         "timestamp": datetime.now().isoformat(),
         "api_name": app.title
     }
+
+
+# include prediction router
+app.include_router(predict.router)
