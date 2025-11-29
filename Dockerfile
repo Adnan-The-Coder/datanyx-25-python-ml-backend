@@ -1,23 +1,52 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
+# Multi-stage Dockerfile for ML Disease Prediction API
+FROM python:3.10-slim as base
 
-# The base image already sets the WORKDIR to /app
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Copy dependencies file
-COPY ./requirements.txt /app/requirements.txt
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+# Create app user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# Copy the ML models module
-COPY ./ml_models.py /app/ml_models.py
+# Set work directory
+WORKDIR /app
 
-# Copy the trained models directory
-COPY ./models /app/models
+# Copy requirements first for better caching
+COPY requirements.txt .
 
-# Copy the data directory (for dataset)
-COPY ./data /app/data
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire 'app' directory which should contain 'main.py'
-COPY ./app /app/app
+# Copy application code
+COPY . .
 
+# Ensure models directory exists and copy models
+RUN mkdir -p models
+COPY models/ models/
+
+# Create directories for logs and temp files
+RUN mkdir -p logs tmp
+
+# Change ownership to app user
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Expose port
 EXPOSE 8000
+
+# Command to run the application
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
