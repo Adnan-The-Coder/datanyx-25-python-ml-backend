@@ -1,1 +1,2 @@
-# This file makes the v1 directory a Python package
+# package marker for app.api.v1
+# (leave empty)

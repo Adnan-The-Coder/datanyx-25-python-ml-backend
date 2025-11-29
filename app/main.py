@@ -1,12 +1,22 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
-from api.v1.endpoints import predict
+from .api.v1.endpoints import predict  # <-- Changed this line
 
 # Initialize the FastAPI application
 app = FastAPI(
     title="Minimal FastAPI Backend",
     version="1.0.0",
     description="A simple, Docker-ready starting template for Python microservices."
+)
+
+# Add CORS middleware - allow all origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
 )
 
 # --- API Endpoints ---

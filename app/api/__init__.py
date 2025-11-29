@@ -1,1 +1,2 @@
-# This file makes the api directory a Python package
+# package marker for app.api
+# (leave empty)
