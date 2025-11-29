@@ -1,0 +1,59 @@
+name: Deploy to AWS Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build & Deploy to Elastic Beanstalk
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --- Install AWS CLI ---
+      - name: Install AWS CLI
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: "2"
+
+      # --- Configure AWS Credentials ---
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # --- Validate Docker Build ---
+      - name: Build Docker image
+        run: docker build -t fastapi-backend .
+
+      # --- Create ZIP Bundle for Beanstalk ---
+      - name: Create deployment package
+        run: |
+          zip -r deploy.zip . -x "*.git*" "venv/*" "__pycache__/*"
+
+      # --- Upload ZIP to S3 ---
+      - name: Upload to S3
+        run: |
+          aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET }}/deploy-${{ github.run_number }}.zip
+
+      # --- Create Beanstalk version ---
+      - name: Create new application version
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name "${{ secrets.EB_APP_NAME }}" \
+            --version-label "build-${{ github.run_number }}" \
+            --source-bundle S3Bucket="${{ secrets.S3_BUCKET }}",S3Key="deploy-${{ github.run_number }}.zip"
+
+      # --- Deploy to EB environment ---
+      - name: Deploy to Elastic Beanstalk
+        run: |
+          aws elasticbeanstalk update-environment \
+            --environment-name "${{ secrets.EB_ENV_NAME }}" \
+            --version-label "build-${{ github.run_number }}"

@@ -10,3 +10,5 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 # Copy the entire 'app' directory which should contain 'main.py'
 COPY ./app /app/app
+
+EXPOSE 8000
