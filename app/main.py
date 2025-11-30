@@ -1,9 +1,7 @@
-<<<<<<< HEAD
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from .api.v1.endpoints import predict  # <-- Changed this line
-=======
 """
 FastAPI ML Disease Prediction API
 
@@ -33,7 +31,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import API routers
 from api.v1.endpoints import predict
->>>>>>> 278679b2ba1cfe5af97631b7b7c4a9030f264a7d
 
 # Initialize the FastAPI application
 app = FastAPI(
@@ -67,7 +64,6 @@ app = FastAPI(
     }
 )
 
-<<<<<<< HEAD
 # Add CORS middleware - allow all origins
 app.add_middleware(
     CORSMiddleware,
@@ -78,7 +74,6 @@ app.add_middleware(
 )
 
 # --- API Endpoints ---
-=======
 # CORS middleware for frontend integration
 app.add_middleware(
     CORSMiddleware,
@@ -103,8 +98,6 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 # --- Core API Endpoints ---
->>>>>>> 278679b2ba1cfe5af97631b7b7c4a9030f264a7d
-
 @app.get("/", tags=["Root"])
 async def read_root():
     """
