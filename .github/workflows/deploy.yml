@@ -43,7 +43,20 @@ jobs:
         run: |
           aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET }}/deploy-${{ github.run_number }}.zip
 
-      # --- Create Beanstalk version ---
+      # --- Check if application exists, create if it doesn't ---
+      - name: Check if Elastic Beanstalk application exists
+        id: check-app
+        run: |
+          APPLICATION_NAME="${{ secrets.EB_APP_NAME }}"
+          aws elasticbeanstalk describe-applications --query "Applications[?ApplicationName=='$APPLICATION_NAME'].ApplicationName" --output text || echo "NOT_FOUND"
+          
+      - name: Create new application if it doesn't exist
+        if: steps.check-app.outputs.ApplicationName == 'NOT_FOUND'
+        run: |
+          APPLICATION_NAME="${{ secrets.EB_APP_NAME }}"
+          aws elasticbeanstalk create-application --application-name "$APPLICATION_NAME" --description "Elastic Beanstalk application for $APPLICATION_NAME"
+
+      # --- Create new application version ---
       - name: Create new application version
         run: |
           aws elasticbeanstalk create-application-version \
@@ -57,3 +70,4 @@ jobs:
           aws elasticbeanstalk update-environment \
             --environment-name "${{ secrets.EB_ENV_NAME }}" \
             --version-label "build-${{ github.run_number }}"
+
