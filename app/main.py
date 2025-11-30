@@ -1,7 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from datetime import datetime
 from .api.v1.endpoints import predict  # <-- Changed this line
 """
@@ -74,7 +72,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
 )
-app.add_middleware(HTTPSRedirectMiddleware)
 
 # --- API Endpoints ---
 # CORS middleware for frontend integration
